@@ -35,3 +35,11 @@ Add cabot_alert_slack to the installed apps in settings.py
     $ foreman run python manage.py syncdb
     $ foreman start
 ```
+
+
+## Building
+
+```
+python setup.py bdist_wheel --universal
+twine upload dist/*
+```

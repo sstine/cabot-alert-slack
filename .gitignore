@@ -1,3 +1,7 @@
 *.pyc
 dist/
 cabot_alert_slack.egg-info/
+
+cabot_alert_slack_mattermost\.egg-info/
+
+build/

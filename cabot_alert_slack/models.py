@@ -29,6 +29,11 @@ Service {{ service.name }} {% if service.overall_status == service.PASSING_STATU
 {% endif %}\
 """
 
+mm_text_template = """
+Service {{ service.name }} {% if service.overall_status == service.PASSING_STATUS %}*is back to normal*{% else %}reporting *{{ service.overall_status }}* status{% endif %} \
+{% if alert %}{% for alias in users %} @{{ alias }}{% endfor %}{% endif %}\
+"""
+
 # This provides the slack alias for each user. Each object corresponds to a User
 class SlackAlert(AlertPlugin):
     name = "Slack"
@@ -62,9 +67,10 @@ class SlackAlert(AlertPlugin):
             'jenkins_api': settings.JENKINS_API,
         })
         message = Template(slack_template).render(c)
-        self._send_slack_alert(message, service, color=color, sender='Cabot')
+        mattermost_plaintext_message  = Template(mm_text_template).render(c)
+        self._send_slack_alert(message, service, mattermost_plaintext_message, color=color, sender='Cabot', )
 
-    def _send_slack_alert(self, message, service, color='good', sender='Cabot'):
+    def _send_slack_alert(self, message, service, mattermost_plaintext_message, color='good', sender='Cabot'):
 
         channel = '#' + env.get('SLACK_ALERT_CHANNEL')
         url = env.get('SLACK_WEBHOOK_URL')
@@ -81,6 +87,7 @@ class SlackAlert(AlertPlugin):
 
         # TODO: handle color
         resp = requests.post(url, data=json.dumps({
+            'text': mattermost_plaintext_message,
             'channel': channel,
             'username': sender[:15],
             'icon_url': icon_url,
